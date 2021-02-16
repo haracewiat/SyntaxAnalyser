@@ -1,0 +1,123 @@
+312FILE Programs Folder/program0
+312TOKEN begin on line 1
+312BEGIN StatementPart
+	312BEGIN StatementList
+		312BEGIN Statement
+			312BEGIN CallStatement
+				312TOKEN call on line 2
+				312TOKEN IDENTIFIER 'get' on line 2
+				312TOKEN ( on line 2
+				312BEGIN ArgumentList
+					312TOKEN IDENTIFIER 'x1' on line 2
+				312END ArgumentList
+				312TOKEN ) on line 2
+			312END CallStatement
+		312END Statement
+		312TOKEN ; on line 2
+		312BEGIN Statement
+			312BEGIN AssigmentStatement
+				312TOKEN IDENTIFIER 'x2' on line 3
+				312TOKEN := on line 3
+				312BEGIN Expression
+					312BEGIN Term
+						312BEGIN Factor
+							312TOKEN NUMBER '1' on line 3
+						312END Factor
+					312END Term
+				312END Expression
+			312END AssigmentStatement
+		312END Statement
+		312TOKEN ; on line 3
+		312BEGIN Statement
+			312BEGIN WhileStatement
+				312TOKEN while on line 4
+				312BEGIN Condition
+					312TOKEN IDENTIFIER 'x1' on line 4
+					312BEGIN ConditionalOperator
+						312TOKEN /= on line 4
+					312END ConditionalOperator
+					312TOKEN NUMBER '0' on line 4
+				312END Condition
+				312TOKEN loop on line 4
+				312BEGIN StatementList
+					312BEGIN Statement
+						312BEGIN AssigmentStatement
+							312TOKEN IDENTIFIER 'x2' on line 5
+							312TOKEN := on line 5
+							312BEGIN Expression
+								312BEGIN Term
+									312BEGIN Factor
+										312TOKEN IDENTIFIER 'x2' on line 5
+									312END Factor
+									312TOKEN * on line 5
+									312BEGIN Term
+										312BEGIN Factor
+											312TOKEN IDENTIFIER 'x1' on line 5
+										312END Factor
+									312END Term
+								312END Term
+							312END Expression
+						312END AssigmentStatement
+					312END Statement
+					312TOKEN ; on line 5
+					312BEGIN Statement
+						312BEGIN AssigmentStatement
+							312TOKEN IDENTIFIER 'x1' on line 6
+							312TOKEN := on line 6
+							312BEGIN Expression
+								312BEGIN Term
+									312BEGIN Factor
+										312TOKEN IDENTIFIER 'x1' on line 6
+									312END Factor
+								312END Term
+								312TOKEN - on line 6
+								312BEGIN Term
+									312BEGIN Factor
+										312TOKEN NUMBER '1' on line 6
+									312END Factor
+								312END Term
+							312END Expression
+						312END AssigmentStatement
+					312END Statement
+				312END StatementList
+				312TOKEN end on line 7
+				312TOKEN loop on line 7
+			312END WhileStatement
+		312END Statement
+		312TOKEN ; on line 7
+		312BEGIN Statement
+			312BEGIN AssigmentStatement
+				312TOKEN IDENTIFIER 'text' on line 8
+				312TOKEN := on line 8
+				312TOKEN STRING 'the result is ' on line 8
+			312END AssigmentStatement
+		312END Statement
+		312TOKEN ; on line 8
+		312BEGIN Statement
+			312BEGIN CallStatement
+				312TOKEN call on line 9
+				312TOKEN IDENTIFIER 'put' on line 9
+				312TOKEN ( on line 9
+				312BEGIN ArgumentList
+					312TOKEN IDENTIFIER 'text' on line 9
+				312END ArgumentList
+				312TOKEN ) on line 9
+			312END CallStatement
+		312END Statement
+		312TOKEN ; on line 9
+		312BEGIN Statement
+			312BEGIN CallStatement
+				312TOKEN call on line 10
+				312TOKEN IDENTIFIER 'put' on line 10
+				312TOKEN ( on line 10
+				312BEGIN ArgumentList
+					312TOKEN IDENTIFIER 'x1' on line 10
+				312END ArgumentList
+				312TOKEN ) on line 10
+			312END CallStatement
+		312END Statement
+	312END StatementList
+312END StatementPart
+312TOKEN end on line 11
+312TOKEN EOF on line 13
+312SUCCESS
