@@ -42,67 +42,51 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
     @Override
     public void _statementPart_() throws IOException, CompilationException {
 
-        // Begin
         isBegin();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         myGenerate.commenceNonterminal("StatementPart");
 
-        // Statement list
         _statementList_();
 
-        // end
         myGenerate.finishNonterminal("StatementPart");
 
         isEnd();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
-
-        // EOF
-        myGenerate.insertTerminal(nextToken);
-
 
     }
 
     @Override
     public void acceptTerminal(int symbol) throws IOException, CompilationException {
         
-        if (nextToken.symbol != symbol) {
-            throw new CompilationException("Oops");
+        if (nextToken.symbol == symbol) {
+
+            myGenerate.insertTerminal(nextToken);
+            nextToken = lex.getNextToken();
+            
+        } else {
+
+            myGenerate.reportError(nextToken, 
+                        Token.getName(symbol) + " token expected. " +
+                        "Found " + nextToken.text + " instead " +
+                        "on line " + nextToken.lineNumber);
+            
         }
-
-        nextToken = lex.getNextToken();
-
     }
 
 
-
-
-    /////////////////////////////////////////////////////////////
-
     void _statementList_() throws IOException, CompilationException {
         
-        // Get every call statement (while loop)
         myGenerate.commenceNonterminal("StatementList");
 
-        // <statement> (while?)
-
         _statement_();
-
 
         while (nextToken.symbol == Token.semicolonSymbol) {
 
             isSemicolon();
-            myGenerate.insertTerminal(nextToken);
-            nextToken = lex.getNextToken();
             
             _statement_();
             
-
         };
 
-        // <statement list> ; <statement>
         myGenerate.finishNonterminal("StatementList");
 
     }
@@ -113,35 +97,33 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
         switch (nextToken.symbol) {
 
-            // <assignment statement> 
             case Token.identifier:
                 _assignmentStatement_();
                 break;
             
-            // <if statement> 
             case Token.ifSymbol:
                 _ifStatement_();
                 break;
             
-            //<while statement> 
             case Token.whileSymbol:
                 _whileStatement_();
                 break;
             
-            // <procedure statement> 
             case Token.callSymbol:
                 _procedureStatement_();
                 break;
             
-            // <until statement> 
             case Token.untilSymbol:
                 _untilStatement_();
                 break;
             
-            // <for statement>
             case Token.forSymbol:
                 _forStatement_();
                 break;
+
+            default:
+                myGenerate.reportError(nextToken, "_statement_");
+
         }
 
         myGenerate.finishNonterminal("Statement");
@@ -152,29 +134,18 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
         myGenerate.commenceNonterminal("AssigmentStatement");
 
-        // identifier := <expression>
-
         isIdentifier();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         isBecomesSymbol();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
     
-        // Expression OR stringConstant
         if (nextToken.symbol == Token.stringConstant) {
-            myGenerate.insertTerminal(nextToken);
-            nextToken = lex.getNextToken();
+            isStringConstant();
         }
 
         else {
             _expression_();
         }
-        
-
-        
-
+    
         myGenerate.finishNonterminal("AssigmentStatement");
 
     }
@@ -183,57 +154,33 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
         myGenerate.commenceNonterminal("IfStatement");
 
-        // if <condition> then <statement list> end if 
         isIf();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         _condition_();
 
         isThen();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         _statementList_();
 
-      
-        
-        // else <statement list> end if
         if (nextToken.symbol == Token.elseSymbol) {
 
             isIf();
-            myGenerate.insertTerminal(nextToken);
-            nextToken = lex.getNextToken();
 
             _condition_();
 
             isThen();
-            myGenerate.insertTerminal(nextToken);
-            nextToken = lex.getNextToken();
 
             _statementList_();
 
             isElse();
-            myGenerate.insertTerminal(nextToken);
-            nextToken = lex.getNextToken();
 
             _statementList_();
-
-
 
         }
 
         isEnd();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         isIf();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
-
-        // else {
-        //     System.out.println("unknown..."); //TODO
-        // }
 
         myGenerate.finishNonterminal("IfStatement");
 
@@ -242,31 +189,20 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
     void _whileStatement_() throws CompilationException, IOException {
 
         myGenerate.commenceNonterminal("WhileStatement");
-        
-        // while <condition> loop <statement list> end loop
 
         isWhile();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         _condition_();
 
         isLoop();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         _statementList_();
 
         isEnd();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         isLoop();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         myGenerate.finishNonterminal("WhileStatement");
-
 
     }
 
@@ -274,30 +210,17 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
         myGenerate.commenceNonterminal("CallStatement");
 
-
-        // call identifier ( <argument list> )
-
         isCall();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         isIdentifier();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         isLeftParenthesis();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         _argumentList_();
 
         isRightParenthesis();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
-
 
         myGenerate.finishNonterminal("CallStatement");
-
 
     }
 
@@ -305,22 +228,15 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
         myGenerate.commenceNonterminal("UntilStatement");
 
-
-        // do <statement list> until <condition>
         isDo();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         _statementList_();
 
         isUntil();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         _condition_();
 
         myGenerate.finishNonterminal("UntilStatement");
-
 
     }
 
@@ -328,50 +244,31 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
         myGenerate.commenceNonterminal("ForStatement");
 
-        
-        // for ( <assignment statement> ; <condition> ; <assignment statement> ) do <statement list> end loop
         isFor();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         isLeftParenthesis();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         _assignmentStatement_();
 
         isSemicolon();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         _condition_();
 
         isSemicolon();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         _assignmentStatement_();
 
         isRightParenthesis();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         isDo();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         _statementList_();
 
         isEnd();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         isLoop();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         myGenerate.finishNonterminal("ForStatement");
-
 
     }
 
@@ -379,18 +276,11 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
         myGenerate.commenceNonterminal("ArgumentList");
 
-
-        //  identifier 
         do {
             isIdentifier();
-            myGenerate.insertTerminal(nextToken);
-            nextToken = lex.getNextToken();
         } while (nextToken.symbol != Token.rightParenthesis);
         
-        // <argument list> , identifier
-
         myGenerate.finishNonterminal("ArgumentList");
-
 
     }
 
@@ -398,69 +288,34 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
         myGenerate.commenceNonterminal("Condition");
 
-
-        // identifier <conditional operator> identifier 
         isIdentifier();
-        myGenerate.insertTerminal(nextToken);
-        nextToken = lex.getNextToken();
 
         _conditionalOperator_();
 
-
-        // identifier 
         if (nextToken.symbol == Token.identifier){
             isIdentifier();
-            myGenerate.insertTerminal(nextToken);
-            nextToken = lex.getNextToken();
         }
         
         else if (nextToken.symbol == Token.numberConstant) {
-            myGenerate.insertTerminal(nextToken);
-            nextToken = lex.getNextToken();
+            isNumberConstant();
         }
 
         else if (nextToken.symbol == Token.stringConstant) {
-            myGenerate.insertTerminal(nextToken);
-            nextToken = lex.getNextToken();
+            isStringConstant();
         }
-
-        else {
-            // TODO error
-            System.out.println("Unknown type");
-        }
-        
 
         myGenerate.finishNonterminal("Condition");
-
 
     }
 
     void _conditionalOperator_() throws CompilationException, IOException {
 
         myGenerate.commenceNonterminal("ConditionalOperator");
-        
-        // > | >= | = | /= | < | <=
-        // int[] conditionalOperators = {Token.greaterThanSymbol, Token.greaterEqualSymbol, Token.equalSymbol}; TODO
-
-        if (nextToken.symbol == Token.greaterEqualSymbol ||
-            nextToken.symbol == Token.greaterEqualSymbol ||
-            nextToken.symbol == Token.equalSymbol ||
-            nextToken.symbol == Token.notEqualSymbol ||
-            nextToken.symbol == Token.lessThanSymbol ||
-            nextToken.symbol == Token.lessEqualSymbol ) {
-            
-            myGenerate.insertTerminal(nextToken);
-            nextToken = lex.getNextToken();
-
-        } else {
-            throw new CompilationException("Should be conditional operator");
-        }
-
+    
+        isConditionalOperator();
 
         myGenerate.finishNonterminal("ConditionalOperator");
 
-   
-        
     }
 
     void _expression_() throws CompilationException, IOException {
@@ -469,17 +324,17 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
         _term_();
 
-        if (nextToken.symbol == Token.plusSymbol ||
-            nextToken.symbol == Token.minusSymbol ) {
-
-            myGenerate.insertTerminal(nextToken);
-            nextToken = lex.getNextToken();
-
-            _term_();
+        if (nextToken.symbol == Token.plusSymbol ) {
+            isPlusSign(); 
+            _term_(); 
         }
 
+        else if (nextToken.symbol == Token.minusSymbol) {
+            isMinusSign();
+            _term_();
+        }        
+        
         myGenerate.finishNonterminal("Expression");
-
 
     }
 
@@ -489,173 +344,221 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
         _factor_();
 
-        if (nextToken.symbol == Token.timesSymbol ||
-            nextToken.symbol == Token.divideSymbol ) {
+        if (nextToken.symbol == Token.timesSymbol ) {
+            isTimesSign(); 
+            _term_(); 
+        }
 
-            myGenerate.insertTerminal(nextToken);
-            nextToken = lex.getNextToken();
-
+        else if (nextToken.symbol == Token.divideSymbol) {
+            isDivideSign();
             _term_();
         }
 
-        
-
         myGenerate.finishNonterminal("Term");
-
 
     }
 
     void _factor_() throws CompilationException, IOException {
 
         myGenerate.commenceNonterminal("Factor");
-
-
-
-
-        // identifier 
+ 
         if (nextToken.symbol == Token.identifier) {
-            myGenerate.insertTerminal(nextToken);
-            nextToken = lex.getNextToken();
+            isIdentifier();
         }
         
-        // numberConstant 
         else if (nextToken.symbol == Token.numberConstant) {
-            myGenerate.insertTerminal(nextToken);
-            nextToken = lex.getNextToken();
+            isNumberConstant();
         }
         
-
-        // ( <expression> ) 
         else if (nextToken.symbol == Token.rightParenthesis) {
+
+            isLeftParenthesis();
+
             _expression_();
+
+            isRightParenthesis();
+
         }
 
-        else {
-            System.out.println("Not recognized factor");
-            // TODO
-        }
-        
         myGenerate.finishNonterminal("Factor");
-
 
     }
 
 
 
     //////////////////////////////////////////////////////////////////////////////
-    public void isBegin() throws CompilationException {
-        if (nextToken.symbol != Token.beginSymbol) {
-            throw new CompilationException("The code should begin with a 'begin' symbol.");
-        }
+    public void isBegin() throws CompilationException, IOException {
+        // if (nextToken.symbol != Token.beginSymbol) {
+        //     throw new CompilationException("The code should begin with a 'begin' symbol.");
+        // }
+        // acceptTerminal(nextToken.symbol);
+        acceptTerminal(Token.beginSymbol);
     }
 
-    public void isEnd() throws CompilationException {
+    public void isEnd() throws CompilationException, IOException {
         if (nextToken.symbol != Token.endSymbol) {
             throw new CompilationException("The code should end with an 'end' symbol.");
         }
+        acceptTerminal(nextToken.symbol);
     }
 
-    public void isCall() throws CompilationException {
+    public void isCall() throws CompilationException, IOException {
         if (nextToken.symbol != Token.callSymbol) {
             throw new CompilationException("The call statement should start with a 'call' symbol.");
         }
+        acceptTerminal(nextToken.symbol);
     }
 
-    public void isDo() throws CompilationException {
+    public void isDo() throws CompilationException, IOException {
         if (nextToken.symbol != Token.callSymbol) {
             throw new CompilationException("Should be 'do'");
         }
+        acceptTerminal(nextToken.symbol);
     }
 
-    public void isIf() throws CompilationException {
+    public void isIf() throws CompilationException, IOException {
         if (nextToken.symbol != Token.ifSymbol) {
             throw new CompilationException("Should be 'if'");
         }
+        acceptTerminal(nextToken.symbol);
     }
 
-    public void isThen() throws CompilationException {
+    public void isThen() throws CompilationException, IOException {
         if (nextToken.symbol != Token.thenSymbol) {
             throw new CompilationException("Should be 'then'");
         }
+        acceptTerminal(nextToken.symbol);
     }
 
-    public void isUntil() throws CompilationException {
+    public void isUntil() throws CompilationException, IOException {
         if (nextToken.symbol != Token.callSymbol) {
             throw new CompilationException("Should be 'until'");
         }
+        acceptTerminal(nextToken.symbol);
     }
 
-    public void isSemicolon() throws CompilationException {
+    public void isSemicolon() throws CompilationException, IOException {
         if (nextToken.symbol != Token.semicolonSymbol) {
             throw new CompilationException("Should be ';'");
         }
+
+        acceptTerminal(nextToken.symbol);
     }
 
-    public void isFor() throws CompilationException {
+    public void isFor() throws CompilationException, IOException {
         if (nextToken.symbol != Token.forSymbol) {
             throw new CompilationException("Should be 'for'");
         }
+
+        acceptTerminal(nextToken.symbol);
     }
 
-    public void isLoop() throws CompilationException {
+    public void isLoop() throws CompilationException, IOException {
         if (nextToken.symbol != Token.loopSymbol) {
             throw new CompilationException("Should be 'loop'");
         }
+
+        acceptTerminal(nextToken.symbol);
     }
 
-    public void isWhile() throws CompilationException {
+    public void isWhile() throws CompilationException, IOException {
         if (nextToken.symbol != Token.whileSymbol) {
             throw new CompilationException("Should be 'while'");
         }
+        acceptTerminal(nextToken.symbol);
     }
 
-    public void isPlusSign() throws CompilationException {
+    public void isPlusSign() throws CompilationException, IOException {
         if (nextToken.symbol != Token.plusSymbol) {
             throw new CompilationException("Should be '+'");
         }
+        acceptTerminal(nextToken.symbol);
     }
 
-    public void isMinusSign() throws CompilationException {
+    public void isMinusSign() throws CompilationException, IOException {
         if (nextToken.symbol != Token.minusSymbol) {
             throw new CompilationException("Should be '-'");
         }
+        acceptTerminal(nextToken.symbol);
     }
 
-    public void isLeftParenthesis() throws CompilationException {
+    public void isTimesSign() throws CompilationException, IOException {
+        if (nextToken.symbol != Token.timesSymbol) {
+            throw new CompilationException("Should be '*'");
+        }
+        acceptTerminal(nextToken.symbol);
+    }
+
+    public void isDivideSign() throws CompilationException, IOException {
+        if (nextToken.symbol != Token.divideSymbol) {
+            throw new CompilationException("Should be '/'");
+        }
+        acceptTerminal(nextToken.symbol);
+    }
+
+    public void isLeftParenthesis() throws CompilationException, IOException {
         if (nextToken.symbol != Token.leftParenthesis) {
             throw new CompilationException("Should be (");
         }
+        acceptTerminal(nextToken.symbol);
     }
 
-    public void isRightParenthesis() throws CompilationException {
+    public void isRightParenthesis() throws CompilationException, IOException {
         if (nextToken.symbol != Token.rightParenthesis) {
             throw new CompilationException("Should be )");
         }
+        acceptTerminal(nextToken.symbol);
     }
     
-    public void isElse() throws CompilationException {
+    public void isElse() throws CompilationException, IOException {
         if (nextToken.symbol != Token.elseSymbol) {
             throw new CompilationException("Should be 'else'");
         }
+        acceptTerminal(nextToken.symbol);
     }
 
-    public void isBecomesSymbol() throws CompilationException {
+    public void isBecomesSymbol() throws CompilationException, IOException {
         if (nextToken.symbol != Token.becomesSymbol) {
             throw new CompilationException("Should be ':='");
         }
+        acceptTerminal(nextToken.symbol);
     }
 
-    public void isIdentifier() throws CompilationException {
-        // sequence of one or more letters (a to z, A to Z) 
-        // and digits (0 to 9), 
-        // starting with a letter, and
-        // excluding all the reserved words:
-        // (procedure, is, integer, etc).
+    public void isIdentifier() throws CompilationException, IOException {
         if (nextToken.symbol != Token.identifier) {
             throw new CompilationException("The identifier should...");
         }
+        acceptTerminal(nextToken.symbol);
     }
 
+    public void isConditionalOperator() throws CompilationException, IOException {
+        if (nextToken.symbol != Token.greaterEqualSymbol &&
+            nextToken.symbol != Token.greaterEqualSymbol &&
+            nextToken.symbol != Token.equalSymbol &&
+            nextToken.symbol != Token.notEqualSymbol &&
+            nextToken.symbol != Token.lessThanSymbol &&
+            nextToken.symbol != Token.lessEqualSymbol ) {
+            
+            throw new CompilationException("Should be conditional operator...");
+
+
+        }
+        acceptTerminal(nextToken.symbol);
+    }
+
+    public void isNumberConstant() throws CompilationException, IOException {
+        if (nextToken.symbol != Token.numberConstant) {
+            throw new CompilationException("The number constant should...");
+        }
+        acceptTerminal(nextToken.symbol);
+    }
+
+    public void isStringConstant() throws CompilationException, IOException {
+        if (nextToken.symbol != Token.stringConstant) {
+            throw new CompilationException("The string constant should...");
+        }
+        acceptTerminal(nextToken.symbol);
+    }
 
   
 }
