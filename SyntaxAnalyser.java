@@ -1,43 +1,18 @@
 /**
  *
- *
+ * 
  * @Author: Beata Haracewiat
  *
  *
  **/
 
-
 import java.io.IOException;
-import java.io.PrintStream;
-
 
 public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
-	public LexicalAnalyser lex;
-	public Token nextToken ;
-	public Generate myGenerate = null;
-
     public SyntaxAnalyser(String fileName) throws IOException {
-        this.lex = new LexicalAnalyser(fileName);
+        lex = new LexicalAnalyser(fileName);
     } 
-
-    @Override
-    public void parse( PrintStream ps ) throws IOException
-	{
-		myGenerate = new Generate();
-		try {
-			nextToken = lex.getNextToken() ;
-			_statementPart_() ;
-			acceptTerminal(Token.eofSymbol) ;
-			myGenerate.reportSuccess() ;
-		}
-		catch( CompilationException ex )
-		{
-			ps.println( "Compilation Exception" );
-			ps.println( ex.toTraceString() );
-		}
-	}
-    
 
     @Override
     public void _statementPart_() throws IOException, CompilationException {
@@ -57,23 +32,31 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
     @Override
     public void acceptTerminal(int symbol) throws IOException, CompilationException {
         
+        // Correct token 
         if (nextToken.symbol == symbol) {
-
             myGenerate.insertTerminal(nextToken);
-            nextToken = lex.getNextToken();
-            
-        } else {
-
+            nextToken = lex.getNextToken();  
+        } 
+        
+        // Unexpected token
+        else {
             myGenerate.reportError(nextToken, 
-                        "\"" + Token.getName(symbol) + "\" token expected. " +
-                        "Found \"" + nextToken.text + "\" instead " +
-                        "on line " + nextToken.lineNumber);
-            
+                    "\"" + Token.getName(symbol) + "\" token expected. " +
+                    "Found \"" + nextToken.text + "\" instead " +
+                    "on line " + nextToken.lineNumber);
         }
+
     }
 
+    /** Reads a nonterminal of type &lt; statement list &gt;. The grammar rule for this non-terminal
+     * is as follows:
+     * &lt; statement list &gt; ::= &lt; statement &gt; | 
+     *                      &lt; statement list &gt; ; &lt; statement &gt;
 
-    void _statementList_() throws IOException, CompilationException {
+	  @throws IOException in the event that the next token cannot be read.
+      @throws CompilationException in the event of a compilation error.
+	 */
+    private void _statementList_() throws IOException, CompilationException {
         
         myGenerate.commenceNonterminal("StatementList");
 
@@ -91,7 +74,19 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
     }
 
-    void _statement_() throws IOException, CompilationException {
+    /** Reads a nonterminal of type &lt; statement &gt;. The grammar rule for this non-terminal
+     * is as follows:
+     * &lt; statement &gt; ::= &lt; assignment statement &gt; | 
+     *                 &lt; if statement &gt; | 
+     *                 &lt; while statement &gt; | 
+     *                 &lt; procedure statement &gt; | 
+     *                 &lt; until statement &gt; | 
+     *                 &lt; for statement &gt;
+
+	  @throws IOException in the event that the next token cannot be read.
+      @throws CompilationException in the event of a compilation error.
+	 */
+    private void _statement_() throws IOException, CompilationException {
 
         myGenerate.commenceNonterminal("Statement");
 
@@ -123,14 +118,14 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
             default:
                 myGenerate.reportError(nextToken, 
-                    "Unknown statement type on line " + nextToken.lineNumber + ". " +
-                    "A statement should start with one of the following tokens: " +
-                    Token.getName(Token.identifier) + ", " +
-                    Token.getName(Token.ifSymbol) + ", " +
-                    Token.getName(Token.whileSymbol) + ", " +
-                    Token.getName(Token.callSymbol) + ", " +
-                    Token.getName(Token.untilSymbol) + " or " +
-                    Token.getName(Token.forSymbol) + ".");
+                        "Unknown statement type on line " + nextToken.lineNumber + ". " +
+                        "A statement should start with one of the following tokens: " +
+                        Token.getName(Token.identifier) + ", " +
+                        Token.getName(Token.ifSymbol) + ", " +
+                        Token.getName(Token.whileSymbol) + ", " +
+                        Token.getName(Token.callSymbol) + ", " +
+                        Token.getName(Token.untilSymbol) + " or " +
+                        Token.getName(Token.forSymbol) + ".");
 
         }
 
@@ -138,7 +133,15 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
     }
  
-    void _assignmentStatement_() throws CompilationException, IOException {
+    /** Reads a nonterminal of type &lt; assignment statement &gt;. The grammar rule for this non-terminal
+     * is as follows:
+     * &lt; assignment statement &gt; ::= identifier := &lt; expression &gt; | 
+     *                            identifier := stringConstant
+
+	  @throws IOException in the event that the next token cannot be read.
+      @throws CompilationException in the event of a compilation error.
+	 */
+    private void _assignmentStatement_() throws CompilationException, IOException {
 
         myGenerate.commenceNonterminal("AssigmentStatement");
 
@@ -158,7 +161,15 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
     }
 
-    void _ifStatement_() throws CompilationException, IOException {
+    /** Reads a nonterminal of type &lt; if statement &gt;. The grammar rule for this non-terminal
+     * is as follows:
+     * &lt; if statement &gt; ::= if &lt; condition &gt; then &lt; statement list &gt; end if | }
+     *                    if &lt; condition &gt; then &lt; statement list &gt; else &lt; statement list &gt; end if 
+
+	  @throws IOException in the event that the next token cannot be read.
+      @throws CompilationException in the event of a compilation error.
+	 */
+    private void _ifStatement_() throws CompilationException, IOException {
 
         myGenerate.commenceNonterminal("IfStatement");
 
@@ -194,7 +205,14 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
     }
 
-    void _whileStatement_() throws CompilationException, IOException {
+    /** Reads a nonterminal of type &lt; while statement &gt;. The grammar rule for this non-terminal
+     * is as follows:
+     * &lt; while statement &gt; ::= while &lt; condition &gt; loop &lt; statement list &gt; end loop
+
+	  @throws IOException in the event that the next token cannot be read.
+      @throws CompilationException in the event of a compilation error.
+	 */
+    private void _whileStatement_() throws CompilationException, IOException {
 
         myGenerate.commenceNonterminal("WhileStatement");
 
@@ -214,7 +232,14 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
     }
 
-    void _procedureStatement_() throws CompilationException, IOException {
+    /** Reads a nonterminal of type &lt; procedure statement &gt;. The grammar rule for this non-terminal
+     * is as follows:
+     * &lt; procedure statement &gt; ::= call identifier ( &lt; argument list &gt; )
+
+	  @throws IOException in the event that the next token cannot be read.
+      @throws CompilationException in the event of a compilation error.
+	 */
+    private void _procedureStatement_() throws CompilationException, IOException {
 
         myGenerate.commenceNonterminal("CallStatement");
 
@@ -232,7 +257,14 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
     }
 
-    void _untilStatement_() throws IOException, CompilationException {
+    /** Reads a nonterminal of type &lt; until statement &gt;. The grammar rule for this non-terminal
+     * is as follows:
+     * &lt; until statement &gt; ::= do &lt; statement list &gt; until &lt; condition &gt;
+
+	  @throws IOException in the event that the next token cannot be read.
+      @throws CompilationException in the event of a compilation error.
+	 */
+    private void _untilStatement_() throws IOException, CompilationException {
 
         myGenerate.commenceNonterminal("UntilStatement");
 
@@ -248,7 +280,14 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
     }
 
-    void _forStatement_() throws CompilationException, IOException {
+    /** Reads a nonterminal of type &lt; for statement &gt;. The grammar rule for this non-terminal
+     * is as follows:
+     * &lt; for statement &gt; ::= for ( &lt; assignment statement &gt; ; &lt; condition &gt; ; &lt; assignment statement &gt; ) do &lt; statement list &gt; end loop
+
+	  @throws IOException in the event that the next token cannot be read.
+      @throws CompilationException in the event of a compilation error.
+	 */
+    private void _forStatement_() throws CompilationException, IOException {
 
         myGenerate.commenceNonterminal("ForStatement");
 
@@ -280,7 +319,15 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
     }
 
-    void _argumentList_() throws CompilationException, IOException {
+    /** Reads a nonterminal of type &lt; argument list &gt;. The grammar rule for this non-terminal
+     * is as follows:
+     * &lt; argument list &gt; ::= identifier | 
+     *                     &lt; argument list &gt; , identifier
+
+	  @throws IOException in the event that the next token cannot be read.
+      @throws CompilationException in the event of a compilation error.
+	 */
+    private void _argumentList_() throws CompilationException, IOException {
 
         myGenerate.commenceNonterminal("ArgumentList");
 
@@ -298,7 +345,16 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
     }
 
-    void _condition_() throws CompilationException, IOException {
+    /** Reads a nonterminal of type &lt; condition &gt;. The grammar rule for this non-terminal
+     * is as follows:
+     * &lt; condition &gt; ::= identifier &lt; conditional operator &gt; identifier | 
+     *                 identifier &lt; conditional operator &gt; numberConstant | 
+     *                 identifier &lt; conditional operator &gt; stringConstant 
+
+	  @throws IOException in the event that the next token cannot be read.
+      @throws CompilationException in the event of a compilation error.
+	 */
+    private void _condition_() throws CompilationException, IOException {
 
         myGenerate.commenceNonterminal("Condition");
 
@@ -322,7 +378,14 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
     }
 
-    void _conditionalOperator_() throws CompilationException, IOException {
+    /** Reads a nonterminal of type &lt; conditional operator &gt;. The grammar rule for this non-terminal
+     * is as follows:
+     * &lt; conditional operator &gt; ::=  &gt; |  &gt;= | = | /= | &lt;  | &lt; =
+
+	  @throws IOException in the event that the next token cannot be read.
+      @throws CompilationException in the event of a compilation error.
+	 */
+    private void _conditionalOperator_() throws CompilationException, IOException {
 
         myGenerate.commenceNonterminal("ConditionalOperator");
     
@@ -353,7 +416,15 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
                 break;
 
             default:
-                myGenerate.reportError(nextToken, "Unrecognized conditional operator.");
+                myGenerate.reportError(nextToken,   
+                        "Unrecognized conditional operator on line " + nextToken.lineNumber + ". " +
+                        "A conditional operator should be one of the following: " +
+                        Token.getName(Token.greaterEqualSymbol) + ", " +
+                        Token.getName(Token.greaterThanSymbol) + ", " +
+                        Token.getName(Token.equalSymbol) + ", " +
+                        Token.getName(Token.notEqualSymbol) + ", " +
+                        Token.getName(Token.lessEqualSymbol) + " or " +
+                        Token.getName(Token.lessThanSymbol) + ".");
 
 
         }
@@ -362,7 +433,16 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
     }
 
-    void _expression_() throws CompilationException, IOException {
+    /** Reads a nonterminal of type &lt; expression &gt;. The grammar rule for this non-terminal
+     * is as follows:
+     * &lt; expression &gt; ::= &lt; term &gt; | 
+     *                  &lt; expression &gt; + &lt; term &gt; | 
+     *                  &lt; expression &gt; - &lt; term &gt;
+
+	  @throws IOException in the event that the next token cannot be read.
+      @throws CompilationException in the event of a compilation error.
+	 */
+    private void _expression_() throws CompilationException, IOException {
 
         myGenerate.commenceNonterminal("Expression");
 
@@ -391,7 +471,16 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
     }
 
-    void _term_() throws CompilationException, IOException {
+    /** Reads a nonterminal of type &lt; term &gt;. The grammar rule for this non-terminal
+     * is as follows:
+     * &lt; term &gt; ::= &lt; factor &gt; | 
+     *            &lt; term &gt; * &lt; factor &gt; | 
+     *            &lt; term &gt; / &lt; factor &gt;
+
+	  @throws IOException in the event that the next token cannot be read.
+      @throws CompilationException in the event of a compilation error.
+	 */
+    private void _term_() throws CompilationException, IOException {
 
         myGenerate.commenceNonterminal("Term");
 
@@ -420,25 +509,44 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
     }
 
-    void _factor_() throws CompilationException, IOException {
+    /** Reads a nonterminal of type &lt; factor &gt;. The grammar rule for this non-terminal
+     * is as follows:
+     * &lt; factor &gt; ::= identifier | 
+     *              numberConstant | 
+     *              ( &lt; expression &gt; )
+
+	  @throws IOException in the event that the next token cannot be read.
+      @throws CompilationException in the event of a compilation error.
+	 */
+    private void _factor_() throws CompilationException, IOException {
 
         myGenerate.commenceNonterminal("Factor");
  
-        if (nextToken.symbol == Token.identifier) {
-            acceptTerminal(Token.identifier);
-        }
-        
-        else if (nextToken.symbol == Token.numberConstant) {
-            acceptTerminal(Token.numberConstant);
-        }
-        
-        else if (nextToken.symbol == Token.rightParenthesis) {
+        switch (nextToken.symbol) {
 
-            acceptTerminal(Token.leftParenthesis);
+            case Token.identifier:
+                acceptTerminal(Token.identifier);
+                break;
 
-            _expression_();
+            case Token.numberConstant:
+                acceptTerminal(Token.numberConstant);
+                break;
 
-            acceptTerminal(Token.rightParenthesis);
+            case Token.leftParenthesis:
+                acceptTerminal(Token.leftParenthesis);
+
+                _expression_();
+
+                acceptTerminal(Token.rightParenthesis);    
+                break;
+
+            default:
+                myGenerate.reportError(nextToken, 
+                        "Unknown token on line " + nextToken.lineNumber + ". " +
+                        "A factor should be one of the following: " +
+                        Token.getName(Token.identifier) + ", " +
+                        Token.getName(Token.numberConstant) + " or " +
+                        Token.getName(Token.leftParenthesis) + ".");
 
         }
 

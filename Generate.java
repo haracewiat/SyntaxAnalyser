@@ -8,9 +8,13 @@
 
 public class Generate extends AbstractGenerate {
     
-    Generate() {
-
+    public Generate() {
+        super();
     }
+
+    // public Generate(String explanatoryMessage) {
+
+    // }
 
     @Override
     public void reportError(Token token, String explanatoryMessage) throws CompilationException {
