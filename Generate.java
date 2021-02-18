@@ -24,7 +24,7 @@ public class Generate extends AbstractGenerate {
         // The method should finish by throwing the exception 
         // CompilationException, which should eventually be caught 
         // by the parse method in the SyntaxAnalyser class
-        throw new CompilationException(explanatoryMessage);
+        throw new CompilationException("unexpected token. " + explanatoryMessage);
     }
 
 }
