@@ -17,15 +17,15 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
     @Override
     public void _statementPart_() throws IOException, CompilationException {
 
-        acceptTerminal(Token.beginSymbol);
-
         myGenerate.commenceNonterminal("StatementPart");
+        
+        acceptTerminal(Token.beginSymbol);
 
         _statementList_();
 
-        myGenerate.finishNonterminal("StatementPart");
-
         acceptTerminal(Token.endSymbol);
+
+        myGenerate.finishNonterminal("StatementPart");
 
     }
 
@@ -62,11 +62,11 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
         _statement_();
 
-        while (nextToken.symbol == Token.semicolonSymbol) {
+        if (nextToken.symbol == Token.semicolonSymbol) {
 
             acceptTerminal(Token.semicolonSymbol);
             
-            _statement_();
+            _statementList_();
             
         };
 
@@ -448,7 +448,7 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
         _term_();
 
-        while (nextToken.symbol == Token.plusSymbol || 
+        if (nextToken.symbol == Token.plusSymbol || 
             nextToken.symbol == Token.minusSymbol) {
             
             switch (nextToken.symbol) {
@@ -463,7 +463,7 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
             }
             
-            _term_(); 
+            _expression_(); 
 
         }     
         
@@ -486,7 +486,7 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
         _factor_();
 
-        while (nextToken.symbol == Token.timesSymbol || 
+        if (nextToken.symbol == Token.timesSymbol || 
             nextToken.symbol == Token.divideSymbol) {
             
             switch (nextToken.symbol) {
