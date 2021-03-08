@@ -143,7 +143,7 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 	 */
     private void _assignmentStatement_() throws CompilationException, IOException {
 
-        myGenerate.commenceNonterminal("AssigmentStatement");
+        myGenerate.commenceNonterminal("AssignmentStatement");
 
         acceptTerminal(Token.identifier);
 
@@ -157,7 +157,7 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
             _expression_();
         }
     
-        myGenerate.finishNonterminal("AssigmentStatement");
+        myGenerate.finishNonterminal("AssignmentStatement");
 
     }
 
@@ -241,7 +241,7 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 	 */
     private void _procedureStatement_() throws CompilationException, IOException {
 
-        myGenerate.commenceNonterminal("CallStatement");
+        myGenerate.commenceNonterminal("ProcedureStatement");
 
         acceptTerminal(Token.callSymbol);
 
@@ -253,7 +253,7 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
         acceptTerminal(Token.rightParenthesis);
 
-        myGenerate.finishNonterminal("CallStatement");
+        myGenerate.finishNonterminal("ProcedureStatement");
 
     }
 
