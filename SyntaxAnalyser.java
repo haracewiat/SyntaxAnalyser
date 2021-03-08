@@ -17,15 +17,22 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
     @Override
     public void _statementPart_() throws IOException, CompilationException {
 
-        myGenerate.commenceNonterminal("StatementPart");
-        
-        acceptTerminal(Token.beginSymbol);
+        try {
 
-        _statementList_();
+            myGenerate.commenceNonterminal("StatementPart");
+            
+            acceptTerminal(Token.beginSymbol);
 
-        acceptTerminal(Token.endSymbol);
+            _statementList_();
 
-        myGenerate.finishNonterminal("StatementPart");
+            acceptTerminal(Token.endSymbol);
+
+            myGenerate.finishNonterminal("StatementPart");
+
+        } catch (CompilationException exception) {
+            String source = Thread.currentThread().getStackTrace()[1].toString();
+            throw new CompilationException("parsing error at " + source, exception);
+        }
 
     }
 
@@ -57,20 +64,27 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
       @throws CompilationException in the event of a compilation error.
 	 */
     private void _statementList_() throws IOException, CompilationException {
+
+        try {
         
-        myGenerate.commenceNonterminal("StatementList");
+            myGenerate.commenceNonterminal("StatementList");
 
-        _statement_();
+            _statement_();
 
-        if (nextToken.symbol == Token.semicolonSymbol) {
+            if (nextToken.symbol == Token.semicolonSymbol) {
 
-            acceptTerminal(Token.semicolonSymbol);
-            
-            _statementList_();
-            
-        };
+                acceptTerminal(Token.semicolonSymbol);
+                
+                _statementList_();
+                
+            };
 
-        myGenerate.finishNonterminal("StatementList");
+            myGenerate.finishNonterminal("StatementList");
+        
+        } catch (CompilationException exception) {
+            String source = Thread.currentThread().getStackTrace()[1].toString();
+            throw new CompilationException("parsing error at " + source, exception);
+        }
 
     }
 
@@ -88,48 +102,54 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 	 */
     private void _statement_() throws IOException, CompilationException {
 
-        myGenerate.commenceNonterminal("Statement");
+        try {
+            myGenerate.commenceNonterminal("Statement");
 
-        switch (nextToken.symbol) {
+            switch (nextToken.symbol) {
 
-            case Token.identifier:
-                _assignmentStatement_();
-                break;
-            
-            case Token.ifSymbol:
-                _ifStatement_();
-                break;
-            
-            case Token.whileSymbol:
-                _whileStatement_();
-                break;
-            
-            case Token.callSymbol:
-                _procedureStatement_();
-                break;
-            
-            case Token.untilSymbol:
-                _untilStatement_();
-                break;
-            
-            case Token.forSymbol:
-                _forStatement_();
-                break;
+                case Token.identifier:
+                    _assignmentStatement_();
+                    break;
+                
+                case Token.ifSymbol:
+                    _ifStatement_();
+                    break;
+                
+                case Token.whileSymbol:
+                    _whileStatement_();
+                    break;
+                
+                case Token.callSymbol:
+                    _procedureStatement_();
+                    break;
+                
+                case Token.untilSymbol:
+                    _untilStatement_();
+                    break;
+                
+                case Token.forSymbol:
+                    _forStatement_();
+                    break;
 
-            default:
-                myGenerate.reportError(nextToken, 
-                        "Unknown statement type on line " + nextToken.lineNumber + ". " +
-                        "A statement should start with one of the following tokens: " +
-                        Token.getName(Token.identifier) + ", " +
-                        Token.getName(Token.ifSymbol) + ", " +
-                        Token.getName(Token.whileSymbol) + ", " +
-                        Token.getName(Token.callSymbol) + ", " +
-                        Token.getName(Token.untilSymbol) + " or " +
-                        Token.getName(Token.forSymbol) + ".");
+                default:
+                    myGenerate.reportError(nextToken, 
+                            "Unknown statement type on line " + nextToken.lineNumber + ". " +
+                            "A statement should start with one of the following tokens: " +
+                            Token.getName(Token.identifier) + ", " +
+                            Token.getName(Token.ifSymbol) + ", " +
+                            Token.getName(Token.whileSymbol) + ", " +
+                            Token.getName(Token.callSymbol) + ", " +
+                            Token.getName(Token.untilSymbol) + " or " +
+                            Token.getName(Token.forSymbol) + ".");
 
+            }
+
+            myGenerate.finishNonterminal("Statement");
+
+        } catch (CompilationException exception) {
+            String source = Thread.currentThread().getStackTrace()[1].toString();
+            throw new CompilationException("parsing error at " + source, exception);
         }
-
-        myGenerate.finishNonterminal("Statement");
 
     }
  
@@ -143,21 +163,28 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 	 */
     private void _assignmentStatement_() throws CompilationException, IOException {
 
-        myGenerate.commenceNonterminal("AssignmentStatement");
+        try {
 
-        acceptTerminal(Token.identifier);
+            myGenerate.commenceNonterminal("AssignmentStatement");
 
-        acceptTerminal(Token.becomesSymbol);
-    
-        if (nextToken.symbol == Token.stringConstant) {
-            acceptTerminal(Token.stringConstant);
+            acceptTerminal(Token.identifier);
+
+            acceptTerminal(Token.becomesSymbol);
+        
+            if (nextToken.symbol == Token.stringConstant) {
+                acceptTerminal(Token.stringConstant);
+            }
+
+            else {
+                _expression_();
+            }
+        
+            myGenerate.finishNonterminal("AssignmentStatement");
+
+        } catch (CompilationException exception) {
+            String source = Thread.currentThread().getStackTrace()[1].toString();
+            throw new CompilationException("parsing error at " + source, exception);
         }
-
-        else {
-            _expression_();
-        }
-    
-        myGenerate.finishNonterminal("AssignmentStatement");
 
     }
 
@@ -171,17 +198,9 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 	 */
     private void _ifStatement_() throws CompilationException, IOException {
 
-        myGenerate.commenceNonterminal("IfStatement");
+        try {
 
-        acceptTerminal(Token.ifSymbol);
-
-        _condition_();
-
-        acceptTerminal(Token.thenSymbol);
-
-        _statementList_();
-
-        if (nextToken.symbol == Token.elseSymbol) {
+            myGenerate.commenceNonterminal("IfStatement");
 
             acceptTerminal(Token.ifSymbol);
 
@@ -191,17 +210,32 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 
             _statementList_();
 
-            acceptTerminal(Token.elseSymbol);
+            if (nextToken.symbol == Token.elseSymbol) {
 
-            _statementList_();
+                acceptTerminal(Token.ifSymbol);
 
+                _condition_();
+
+                acceptTerminal(Token.thenSymbol);
+
+                _statementList_();
+
+                acceptTerminal(Token.elseSymbol);
+
+                _statementList_();
+
+            }
+
+            acceptTerminal(Token.endSymbol);
+
+            acceptTerminal(Token.ifSymbol);
+
+            myGenerate.finishNonterminal("IfStatement");
+
+        } catch (CompilationException exception) {
+            String source = Thread.currentThread().getStackTrace()[1].toString();
+            throw new CompilationException("parsing error at " + source, exception);
         }
-
-        acceptTerminal(Token.endSymbol);
-
-        acceptTerminal(Token.ifSymbol);
-
-        myGenerate.finishNonterminal("IfStatement");
 
     }
 
@@ -214,21 +248,28 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 	 */
     private void _whileStatement_() throws CompilationException, IOException {
 
-        myGenerate.commenceNonterminal("WhileStatement");
+        try {
 
-        acceptTerminal(Token.whileSymbol);
+            myGenerate.commenceNonterminal("WhileStatement");
 
-        _condition_();
+            acceptTerminal(Token.whileSymbol);
 
-        acceptTerminal(Token.loopSymbol);
+            _condition_();
 
-        _statementList_();
+            acceptTerminal(Token.loopSymbol);
 
-        acceptTerminal(Token.endSymbol);
+            _statementList_();
 
-        acceptTerminal(Token.loopSymbol);
+            acceptTerminal(Token.endSymbol);
 
-        myGenerate.finishNonterminal("WhileStatement");
+            acceptTerminal(Token.loopSymbol);
+
+            myGenerate.finishNonterminal("WhileStatement");
+
+        } catch (CompilationException exception) {
+            String source = Thread.currentThread().getStackTrace()[1].toString();
+            throw new CompilationException("parsing error at " + source, exception);
+        }
 
     }
 
@@ -241,19 +282,26 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 	 */
     private void _procedureStatement_() throws CompilationException, IOException {
 
-        myGenerate.commenceNonterminal("ProcedureStatement");
+        try {
 
-        acceptTerminal(Token.callSymbol);
+            myGenerate.commenceNonterminal("ProcedureStatement");
 
-        acceptTerminal(Token.identifier);
+            acceptTerminal(Token.callSymbol);
 
-        acceptTerminal(Token.leftParenthesis);
+            acceptTerminal(Token.identifier);
 
-        _argumentList_();
+            acceptTerminal(Token.leftParenthesis);
 
-        acceptTerminal(Token.rightParenthesis);
+            _argumentList_();
 
-        myGenerate.finishNonterminal("ProcedureStatement");
+            acceptTerminal(Token.rightParenthesis);
+
+            myGenerate.finishNonterminal("ProcedureStatement");
+
+        } catch (CompilationException exception) {
+            String source = Thread.currentThread().getStackTrace()[1].toString();
+            throw new CompilationException("parsing error at " + source, exception);
+        }
 
     }
 
@@ -266,17 +314,24 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 	 */
     private void _untilStatement_() throws IOException, CompilationException {
 
-        myGenerate.commenceNonterminal("UntilStatement");
+        try {
 
-        acceptTerminal(Token.doSymbol);
+            myGenerate.commenceNonterminal("UntilStatement");
 
-        _statementList_();
+            acceptTerminal(Token.doSymbol);
 
-        acceptTerminal(Token.untilSymbol);
+            _statementList_();
 
-        _condition_();
+            acceptTerminal(Token.untilSymbol);
 
-        myGenerate.finishNonterminal("UntilStatement");
+            _condition_();
+
+            myGenerate.finishNonterminal("UntilStatement");
+
+        } catch (CompilationException exception) {
+            String source = Thread.currentThread().getStackTrace()[1].toString();
+            throw new CompilationException("parsing error at " + source, exception);
+        }
 
     }
 
@@ -289,33 +344,40 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 	 */
     private void _forStatement_() throws CompilationException, IOException {
 
-        myGenerate.commenceNonterminal("ForStatement");
+        try {
 
-        acceptTerminal(Token.forSymbol);
+            myGenerate.commenceNonterminal("ForStatement");
 
-        acceptTerminal(Token.leftParenthesis);
+            acceptTerminal(Token.forSymbol);
 
-        _assignmentStatement_();
+            acceptTerminal(Token.leftParenthesis);
 
-        acceptTerminal(Token.semicolonSymbol);
+            _assignmentStatement_();
 
-        _condition_();
+            acceptTerminal(Token.semicolonSymbol);
 
-        acceptTerminal(Token.semicolonSymbol);
+            _condition_();
 
-        _assignmentStatement_();
+            acceptTerminal(Token.semicolonSymbol);
 
-        acceptTerminal(Token.rightParenthesis);
+            _assignmentStatement_();
 
-        acceptTerminal(Token.doSymbol);
+            acceptTerminal(Token.rightParenthesis);
 
-        _statementList_();
+            acceptTerminal(Token.doSymbol);
 
-        acceptTerminal(Token.endSymbol);
+            _statementList_();
 
-        acceptTerminal(Token.loopSymbol);
+            acceptTerminal(Token.endSymbol);
 
-        myGenerate.finishNonterminal("ForStatement");
+            acceptTerminal(Token.loopSymbol);
+
+            myGenerate.finishNonterminal("ForStatement");
+
+        } catch (CompilationException exception) {
+            String source = Thread.currentThread().getStackTrace()[1].toString();
+            throw new CompilationException("parsing error at " + source, exception);
+        }
 
     }
 
@@ -329,19 +391,26 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 	 */
     private void _argumentList_() throws CompilationException, IOException {
 
-        myGenerate.commenceNonterminal("ArgumentList");
+        try {
 
-        acceptTerminal(Token.identifier);
+            myGenerate.commenceNonterminal("ArgumentList");
 
-        while (nextToken.symbol == Token.commaSymbol) {
+            acceptTerminal(Token.identifier);
+
+            while (nextToken.symbol == Token.commaSymbol) {
+                
+                acceptTerminal(Token.commaSymbol);
+                
+                acceptTerminal(Token.identifier); 
+                
+            } 
             
-            acceptTerminal(Token.commaSymbol);
-            
-            acceptTerminal(Token.identifier); 
-            
-        } 
-        
-        myGenerate.finishNonterminal("ArgumentList");
+            myGenerate.finishNonterminal("ArgumentList");
+
+        } catch (CompilationException exception) {
+            String source = Thread.currentThread().getStackTrace()[1].toString();
+            throw new CompilationException("parsing error at " + source, exception);
+        }
 
     }
 
@@ -356,25 +425,32 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 	 */
     private void _condition_() throws CompilationException, IOException {
 
-        myGenerate.commenceNonterminal("Condition");
+        try {
 
-        acceptTerminal(Token.identifier);
+            myGenerate.commenceNonterminal("Condition");
 
-        _conditionalOperator_();
-
-        if (nextToken.symbol == Token.identifier){
             acceptTerminal(Token.identifier);
-        }
-        
-        else if (nextToken.symbol == Token.numberConstant) {
-            acceptTerminal(Token.numberConstant);
-        }
 
-        else if (nextToken.symbol == Token.stringConstant) {
-            acceptTerminal(Token.stringConstant);
-        }
+            _conditionalOperator_();
 
-        myGenerate.finishNonterminal("Condition");
+            if (nextToken.symbol == Token.identifier){
+                acceptTerminal(Token.identifier);
+            }
+            
+            else if (nextToken.symbol == Token.numberConstant) {
+                acceptTerminal(Token.numberConstant);
+            }
+
+            else if (nextToken.symbol == Token.stringConstant) {
+                acceptTerminal(Token.stringConstant);
+            }
+
+            myGenerate.finishNonterminal("Condition");
+
+        } catch (CompilationException exception) {
+            String source = Thread.currentThread().getStackTrace()[1].toString();
+            throw new CompilationException("parsing error at " + source, exception);
+        }
 
     }
 
@@ -387,49 +463,56 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 	 */
     private void _conditionalOperator_() throws CompilationException, IOException {
 
-        myGenerate.commenceNonterminal("ConditionalOperator");
-    
-        switch (nextToken.symbol) {
+        try {
 
-            case Token.greaterEqualSymbol:
-                acceptTerminal(Token.greaterEqualSymbol);
-                break;
+            myGenerate.commenceNonterminal("ConditionalOperator");
+        
+            switch (nextToken.symbol) {
 
-            case Token.greaterThanSymbol:
-                acceptTerminal(Token.greaterThanSymbol);
-                break;
+                case Token.greaterEqualSymbol:
+                    acceptTerminal(Token.greaterEqualSymbol);
+                    break;
 
-            case Token.equalSymbol:
-                acceptTerminal(Token.equalSymbol);
-                break;
+                case Token.greaterThanSymbol:
+                    acceptTerminal(Token.greaterThanSymbol);
+                    break;
 
-            case Token.notEqualSymbol:
-                acceptTerminal(Token.notEqualSymbol);
-                break;
+                case Token.equalSymbol:
+                    acceptTerminal(Token.equalSymbol);
+                    break;
 
-            case Token.lessEqualSymbol:
-                acceptTerminal(Token.lessEqualSymbol);
-                break;
+                case Token.notEqualSymbol:
+                    acceptTerminal(Token.notEqualSymbol);
+                    break;
 
-            case Token.lessThanSymbol:
-                acceptTerminal(Token.lessThanSymbol);
-                break;
+                case Token.lessEqualSymbol:
+                    acceptTerminal(Token.lessEqualSymbol);
+                    break;
 
-            default:
-                myGenerate.reportError(nextToken,   
-                        "Unrecognized conditional operator on line " + nextToken.lineNumber + ". " +
-                        "A conditional operator should be one of the following: " +
-                        Token.getName(Token.greaterEqualSymbol) + ", " +
-                        Token.getName(Token.greaterThanSymbol) + ", " +
-                        Token.getName(Token.equalSymbol) + ", " +
-                        Token.getName(Token.notEqualSymbol) + ", " +
-                        Token.getName(Token.lessEqualSymbol) + " or " +
-                        Token.getName(Token.lessThanSymbol) + ".");
+                case Token.lessThanSymbol:
+                    acceptTerminal(Token.lessThanSymbol);
+                    break;
+
+                default:
+                    myGenerate.reportError(nextToken,   
+                            "Unrecognized conditional operator on line " + nextToken.lineNumber + ". " +
+                            "A conditional operator should be one of the following: " +
+                            Token.getName(Token.greaterEqualSymbol) + ", " +
+                            Token.getName(Token.greaterThanSymbol) + ", " +
+                            Token.getName(Token.equalSymbol) + ", " +
+                            Token.getName(Token.notEqualSymbol) + ", " +
+                            Token.getName(Token.lessEqualSymbol) + " or " +
+                            Token.getName(Token.lessThanSymbol) + ".");
 
 
+            }
+
+            myGenerate.finishNonterminal("ConditionalOperator");
+
+        } catch (CompilationException exception) {
+            String source = Thread.currentThread().getStackTrace()[1].toString();
+            throw new CompilationException("parsing error at " + source, exception);
         }
-
-        myGenerate.finishNonterminal("ConditionalOperator");
 
     }
 
@@ -444,30 +527,37 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 	 */
     private void _expression_() throws CompilationException, IOException {
 
-        myGenerate.commenceNonterminal("Expression");
+        try {
 
-        _term_();
+            myGenerate.commenceNonterminal("Expression");
 
-        if (nextToken.symbol == Token.plusSymbol || 
-            nextToken.symbol == Token.minusSymbol) {
+            _term_();
+
+            if (nextToken.symbol == Token.plusSymbol || 
+                nextToken.symbol == Token.minusSymbol) {
+                
+                switch (nextToken.symbol) {
+
+                    case Token.plusSymbol:
+                        acceptTerminal(Token.plusSymbol);
+                        break;
+
+                    case Token.minusSymbol:
+                        acceptTerminal(Token.minusSymbol);
+                        break;
+
+                }
+                
+                _expression_(); 
+
+            }     
             
-            switch (nextToken.symbol) {
+            myGenerate.finishNonterminal("Expression");
 
-                case Token.plusSymbol:
-                    acceptTerminal(Token.plusSymbol);
-                    break;
-
-                case Token.minusSymbol:
-                    acceptTerminal(Token.minusSymbol);
-                    break;
-
-            }
-            
-            _expression_(); 
-
-        }     
-        
-        myGenerate.finishNonterminal("Expression");
+        } catch (CompilationException exception) {
+            String source = Thread.currentThread().getStackTrace()[1].toString();
+            throw new CompilationException("parsing error at " + source, exception);
+        }
 
     }
 
@@ -482,30 +572,37 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 	 */
     private void _term_() throws CompilationException, IOException {
 
-        myGenerate.commenceNonterminal("Term");
+        try {
 
-        _factor_();
+            myGenerate.commenceNonterminal("Term");
 
-        if (nextToken.symbol == Token.timesSymbol || 
-            nextToken.symbol == Token.divideSymbol) {
-            
-            switch (nextToken.symbol) {
+            _factor_();
 
-                case Token.timesSymbol:
-                    acceptTerminal(Token.timesSymbol);
-                    break;
+            if (nextToken.symbol == Token.timesSymbol || 
+                nextToken.symbol == Token.divideSymbol) {
+                
+                switch (nextToken.symbol) {
 
-                case Token.divideSymbol:
-                    acceptTerminal(Token.divideSymbol);
-                    break;
+                    case Token.timesSymbol:
+                        acceptTerminal(Token.timesSymbol);
+                        break;
+
+                    case Token.divideSymbol:
+                        acceptTerminal(Token.divideSymbol);
+                        break;
+
+                }
+                
+                _term_(); 
 
             }
-            
-            _term_(); 
 
+            myGenerate.finishNonterminal("Term");
+
+        } catch (CompilationException exception) {
+            String source = Thread.currentThread().getStackTrace()[1].toString();
+            throw new CompilationException("parsing error at " + source, exception);
         }
-
-        myGenerate.finishNonterminal("Term");
 
     }
 
@@ -520,37 +617,44 @@ public class SyntaxAnalyser extends AbstractSyntaxAnalyser {
 	 */
     private void _factor_() throws CompilationException, IOException {
 
-        myGenerate.commenceNonterminal("Factor");
- 
-        switch (nextToken.symbol) {
+        try {
 
-            case Token.identifier:
-                acceptTerminal(Token.identifier);
-                break;
+            myGenerate.commenceNonterminal("Factor");
+    
+            switch (nextToken.symbol) {
 
-            case Token.numberConstant:
-                acceptTerminal(Token.numberConstant);
-                break;
+                case Token.identifier:
+                    acceptTerminal(Token.identifier);
+                    break;
 
-            case Token.leftParenthesis:
-                acceptTerminal(Token.leftParenthesis);
+                case Token.numberConstant:
+                    acceptTerminal(Token.numberConstant);
+                    break;
 
-                _expression_();
+                case Token.leftParenthesis:
+                    acceptTerminal(Token.leftParenthesis);
 
-                acceptTerminal(Token.rightParenthesis);    
-                break;
+                    _expression_();
 
-            default:
-                myGenerate.reportError(nextToken, 
-                        "Unknown token on line " + nextToken.lineNumber + ". " +
-                        "A factor should be one of the following: " +
-                        Token.getName(Token.identifier) + ", " +
-                        Token.getName(Token.numberConstant) + " or " +
-                        Token.getName(Token.leftParenthesis) + ".");
+                    acceptTerminal(Token.rightParenthesis);    
+                    break;
 
+                default:
+                    myGenerate.reportError(nextToken, 
+                            "Unknown token on line " + nextToken.lineNumber + ". " +
+                            "A factor should be one of the following: " +
+                            Token.getName(Token.identifier) + ", " +
+                            Token.getName(Token.numberConstant) + " or " +
+                            Token.getName(Token.leftParenthesis) + ".");
+
+            }
+
+            myGenerate.finishNonterminal("Factor");
+
+        } catch (CompilationException exception) {
+            String source = Thread.currentThread().getStackTrace()[1].toString();
+            throw new CompilationException("parsing error at " + source, exception);
         }
-
-        myGenerate.finishNonterminal("Factor");
 
     }
 
